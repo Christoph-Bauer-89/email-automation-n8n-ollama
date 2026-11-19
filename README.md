@@ -1,99 +1,99 @@
-# ✉️ Enterprise Email Automation Engine: Local LLM & Deterministic Workflow Architecture
+# ✉️ E-Mail-Automatisierung mit n8n und lokalem LLM
 
-> Eine hybride, Privacy-First E-Mail-Automations-Pipeline zur intelligenten Vorverarbeitung, Klassifizierung und Beantwortung von Kundenanfragen mittels **n8n**, **Ollama (Llama 3 8B)** und der **Gmail API**.
-
----
-
-## 🛠️ Entwicklungsmethodik & KI-Transparenz
-* **Architektur & Orchestrierung:** Konzipiert und konfiguriert von Christoph Bauer (Business Analytics / Prozessarchitekt).
-* **Entwicklungsansatz:** **AI-Assisted Engineering** (Nutzung von LLMs zum schnellen Prototyping von Docker-Setups, n8n-Workflow-Strukturen und JavaScript-Hilfslogiken).
-* **Kernkompetenz:** Systemarchitektur, Datenschutz-Design, Prompt Engineering und End-to-End-Prozessautomatisierung.
+> Prototyp einer E-Mail-Pipeline, die eingehende Kundenanfragen regelbasiert klassifiziert und mit einem lokal betriebenen LLM (Ollama, Llama 3 8B) Antwortentwürfe in Gmail anlegt.
 
 ---
 
-## 🚀 Executive Summary
+## Rolle & Entwicklungsansatz
 
-* **Problem:** Kundenservice-Teams verbringen unzählige Stunden mit dem manuellen Sortieren, Kategorisieren und Verfassen von Erstantworten auf Standard-Kundenanfragen.
-* **Lösung:** Entwicklung einer hybriden, datenschutzkonformen E-Mail-Automations-Pipeline mit n8n, Ollama (Llama 3 8B) und der Gmail API.
-* **Kernvorteil:** Privacy-First Datenverarbeitung durch ein lokal gehostetes Open-Source-LLM sowie strikte Zuverlässigkeit durch die Kombination aus deterministischer Keyword-Klassifizierung und generativer KI.
+* **Rolle:** Christoph Bauer, Business Analyst: Prozessanalyse, Workflow-Design, Datenschutzkonzept, Prompt-Design und Test.
+* **Umsetzung:** Docker-Setup, n8n-Workflow und JavaScript-Logik habe ich mit KI-Coding-Assistenten erstellt und anschließend getestet und angepasst.
 
 ---
 
-## 🏗️ 1. Tech Stack & Infrastructure Setup
+## Ausgangslage und Lösung
 
-### Key Technologies
-* **Orchestrierung:** n8n (Self-Hosted via Docker)
-* **KI / LLM:** Ollama mit Llama 3 (8B Parameters) (Self-Hosted)
-* **Integrationen:** Gmail API / IMAP Trigger
-* **Logik:** JavaScript (ES6 Code Nodes)
+* **Problem:** Im Kundenservice kostet das Sortieren von Standardanfragen und das Schreiben von Erstantworten viel Zeit.
+* **Lösung:** Eine n8n-Pipeline erkennt Kundenanfragen über eine regelbasierte Prüfung und lässt ein lokales LLM einen Antwortentwurf schreiben.
+* **Datenschutz:** Die Textverarbeitung läuft lokal über Ollama; E-Mail-Inhalte gehen an keinen externen LLM-Anbieter.
+
+---
+
+## Tech Stack
+
+* **Orchestrierung:** n8n (selbst gehostet per Docker)
+* **LLM:** Ollama mit Llama 3 (8B), lokal
+* **Integration:** Gmail API / IMAP-Trigger
+* **Logik:** JavaScript (n8n Code Node)
 
 ![Docker Setup](Docs/n8n-docker-container-status.png)
 
-### 💡 Warum diese Architektur für Unternehmen entscheidend ist (Business Relevance)
-1. **Privacy-First LLM Processing:** Sämtliche Texterkennungs- und Generierungs-Schritte laufen zu 100 % lokal über Ollama. Es fließen keine E-Mail-Inhalte oder sensitive Daten an externe LLM-APIs (wie OpenAI oder Anthropic).
-2. **Kostenkontrolle & Skalierbarkeit:** Keine variablen API-Token-Kosten für die KI-Verarbeitung. Die Pipeline skaliert mit den internen Hardware-Ressourcen.
-3. **Vendor-Unabhängigkeit:** Vollständige Kontrolle über das Modell, den Prompt-Context und die Infrastruktur ohne Abhängigkeit von Rate Limits oder Preisänderungen externer SaaS-Anbieter.
+### Warum diese Architektur
+
+1. **Lokale Verarbeitung:** Keine E-Mail-Inhalte bei externen LLM-APIs.
+2. **Kosten:** Keine nutzungsabhängigen API-Kosten; die Leistung hängt von der eigenen Hardware ab.
+3. **Unabhängigkeit:** Modell, Prompt und Infrastruktur bleiben unter eigener Kontrolle.
 
 ---
 
-## ⚡ 2. Logic & Architecture Overview
+## Architektur: Regeln für Entscheidungen, LLM für Text
 
-### 🧠 Strategic Key Insight: Hybrider Ansatz ("Rule-based + AI Generation")
-Ein zentrales Learning des Projekts war der Wechsel von einer rein KI-basierten Klassifizierung zu einem hybriden Modell:
+Ein wichtiges Learning war der Wechsel von einer reinen LLM-Klassifizierung zu einem hybriden Ansatz:
 
-* **Die Challenge:** Kleine lokale LLMs (wie Llama 3 8B) verfallen bei starren Formatvorgaben gelegentlich in Metasprache (*"Ich habe den Text analysiert..."*). Das führt zu Unschärfen bei harten Weichenstellungen.
-* **Die Lösung:** Die primäre Weichenstellung übernimmt ein deterministischer JavaScript-Code (100 % Fehlerfreiheit). Das LLM wird exklusiv für seine Stärke eingesetzt: Das Erfassen von Kontext und das Generieren hochprofessioneller Antworttexte.
+* **Problem:** Kleine lokale Modelle wie Llama 3 8B halten feste Ausgabeformate nicht immer ein und antworten teils mit Metasprache („Ich habe den Text analysiert …“). Für Weichenstellungen ist das zu unzuverlässig.
+* **Lösung:** Die Entscheidung „Kundenanfrage ja/nein“ trifft deterministischer JavaScript-Code. Das LLM wird nur für das Verstehen des Kontexts und das Formulieren der Antwort eingesetzt.
 
 ![Workflow Architecture](Docs/n8n-workflow-pipeline.png)
 
 ---
 
-## 🔍 3. Implementation Details
+## Umsetzung im Detail
 
-### A. IMAP / E-Mail Trigger
-Liest neu eingehende Mails automatisch aus und übergibt die Plaintext- und HTML-Körper an die Engine.
+### A. IMAP- / E-Mail-Trigger
+Liest neue E-Mails ein und übergibt Text- und HTML-Inhalt an den Workflow.
 
-### B. Code Node (JavaScript Deterministic Matching)
-Der JS-Knoten prüft den E-Mail-Inhalt auf kunden- und supportrelevante Trigger-Begriffe (Fallback-Mechanismen über `textPlain`, `textHtml` und `text` inklusive).
+### B. Code Node (regelbasierte Prüfung)
+Prüft den Inhalt auf definierte Begriffe für Kunden- und Supportanliegen, mit Fallback über `textPlain`, `textHtml` und `text`.
 
 ![JavaScript Code Logic](Docs/javascript-code-node-logic.png)
 
-### C. Basic LLM Chain (Ollama / Llama 3 8B)
-Verwendet den dynamisch übergebenen `emailText`, um maßgeschneiderte Antworten zu verfassen.
+### C. LLM Chain (Ollama / Llama 3 8B)
+Erstellt aus dem übergebenen `emailText` einen passenden Antwortentwurf.
 
-### D. Routing & Output (If Node & Gmail API)
-* **Data Consistency:** Der If-Knoten greift explizit auf das Ergebnis des Code-Knotens zurück (`$('Code in JavaScript').item.json.isCustomer`), um den Datenstrom absolut stabil zu halten.
-* **Human-in-the-Loop Pattern:** Mails werden nicht blind automatisiert verschickt, sondern als Entwurf (Draft) in Gmail gespeichert. Ein menschlicher Mitarbeiter prüft die KI-Antwort vor dem finalen Versand.
+### D. Weiterleitung und Ausgabe (If Node & Gmail API)
+* Der If-Knoten nutzt direkt das Ergebnis des Code-Knotens (`$('Code in JavaScript').item.json.isCustomer`).
+* **Mensch entscheidet:** Antworten werden nicht automatisch versendet, sondern als Entwurf in Gmail gespeichert und vor dem Versand geprüft.
 
 ![Gmail Draft Result](Docs/gmail-draft-result-preview.png)
 
 ---
 
-## 🎯 4. Test Case & Validation
+## Test
 
-**Testergebnis:** Das System hat sämtliche Entitäten (Name, Firmenname, Anliegen, Adressänderung, Kundennummer) fehlerfrei extrahiert, den Kundenpfad korrekt getriggert und einen fertigen Entwurf in unter 3 Sekunden bereitgestellt.
-
----
-
-## 📈 5. Key Learnings & Strategic Takeaways
-
-1. **Hybride Architektur (Code + KI) statt reinem LLM:** Kleine lokale LLMs neigen bei strikter Logik zu Unschärfen. Der deterministische JavaScript-Code übernimmt das 100 % fehlerfreie Routing, während das LLM exklusiv für die Textgenerierung genutzt wird.
-2. **On-Premises Privacy:** Durch die lokale Docker-Infrastruktur (n8n + Ollama / Llama 3) bleibt die KI-Verarbeitung vollständig im eigenen Netz.
-3. **Risikominimierung via "Human-in-the-Loop":** Statt Mails vollautomatisch zu versenden, erzeugt die Pipeline Entwürfe. Das Team spart ~85 % der Tipparbeit, behält aber die finale Freigabekontrolle.
+Im Testfall hat der Workflow Name, Firma, Anliegen, Adressänderung und Kundennummer korrekt erkannt, den Kundenpfad ausgelöst und in unter 3 Sekunden einen Entwurf angelegt. Getestet wurde mit Beispiel-E-Mails, nicht im Produktivbetrieb.
 
 ---
 
-## 📂 Repository-Struktur
+## Learnings
+
+1. **Regeln plus LLM statt nur LLM:** Für eindeutige Entscheidungen ist Code verlässlicher; das LLM spielt seine Stärke bei der Textformulierung aus.
+2. **Lokaler Betrieb:** n8n und Ollama im Docker-Netz halten die Verarbeitung im eigenen System.
+3. **Entwürfe statt Versand:** Die Freigabe durch einen Menschen begrenzt das Risiko fehlerhafter Antworten.
+
+---
+
+## Repository-Struktur
 
 ```text
-├── workflows/
-│   └── email_automation_pipeline.json  # Exportierter n8n Workflow
-├── scripts/
-│   └── email_classifier.js             # JavaScript Logik für deterministisches Matching
-├── docker-compose.yml                   # Lokales Container-Setup (n8n & Ollama)
-├── docs/
+├── Workflows/
+│   └── email_automation_pipeline.json  # Exportierter n8n-Workflow
+├── Scripts/
+│   └── email_classifier.js             # Regelbasierte Klassifizierung
+├── Docs/
 │   ├── n8n-docker-container-status.png
 │   ├── n8n-workflow-pipeline.png
 │   ├── javascript-code-node-logic.png
 │   └── gmail-draft-result-preview.png
-└── README.md                            # Projektdokumentation
+├── docker-compose.yml                  # Lokales Container-Setup (n8n & Ollama)
+└── README.md
+```
